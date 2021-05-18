@@ -26,7 +26,7 @@ namespace Calculator
                     string[] subeqarr;
                     makeequation(ref tsq, out subeqarr);
                     double result;
-                    calculationtwo(subeqarr[0],subeqarr[1],subeqarr[2], out result);
+                    calculationtwo(subeqarr[0],subeqarr[2],subeqarr[1], out result);
                     Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                     equation = equation.Replace("(" + tsq + ")", result.ToString());
                 }
