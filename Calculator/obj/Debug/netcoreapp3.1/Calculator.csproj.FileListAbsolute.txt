@@ -1,0 +1,26 @@
+D:\C#projects\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.exe
+D:\C#projects\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.deps.json
+D:\C#projects\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.runtimeconfig.json
+D:\C#projects\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.runtimeconfig.dev.json
+D:\C#projects\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.dll
+D:\C#projects\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.pdb
+D:\C#projects\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.csprojAssemblyReference.cache
+D:\C#projects\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.AssemblyInfoInputs.cache
+D:\C#projects\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.AssemblyInfo.cs
+D:\C#projects\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.csproj.CoreCompileInputs.cache
+D:\C#projects\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.dll
+D:\C#projects\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.pdb
+D:\C#projects\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.genruntimeconfig.cache
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.exe
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.deps.json
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.runtimeconfig.json
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.runtimeconfig.dev.json
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.dll
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\bin\Debug\netcoreapp3.1\Calculator.pdb
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.csprojAssemblyReference.cache
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.AssemblyInfoInputs.cache
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.AssemblyInfo.cs
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.csproj.CoreCompileInputs.cache
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.dll
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.pdb
+D:\Tools\Programming\Source - Visual Studio\Author Apps\Calculator\Calculator\obj\Debug\netcoreapp3.1\Calculator.genruntimeconfig.cache
