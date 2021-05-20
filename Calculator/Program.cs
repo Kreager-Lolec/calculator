@@ -26,9 +26,10 @@ namespace Calculator
                     string[] subeqarr;
                     makeequation(ref tsq, out subeqarr);
                     double result;
-                    calculationtwo(subeqarr[0], subeqarr[2], subeqarr[1], out result);
-                    Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
+                    calculate(subequation,out result);
+                    //calculationtwo(subeqarr[0], subeqarr[2], subeqarr[1], out result);
                     equation = equation.Replace("(" + tsq + ")", result.ToString());
+                    Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                 }
                 //while equation.contain(дужки)
                 Console.WriteLine("Now equation is: " + equation);
@@ -55,7 +56,6 @@ namespace Calculator
             string resulteq = equation[0].ToString();
             for (int i = 1; i < equation.Length; ++i)
             {
-                if (resulteq.Split().Length == 4) break;
                 if (isnumber(equation[i]) && isnumber(equation[i - 1]))// 
                 {
                     resulteq += equation[i];
@@ -73,20 +73,6 @@ namespace Calculator
             equation = equation.Trim(' ');
             resultarr = resulteq.Split(' ');
             Console.WriteLine("Local arythmetic will be such: " + resulteq);
-        }
-        void muldivfirst(string equation)
-        {
-            for (int i = 0; i < equation.Length; i++)
-            {
-                if (equation[i] == '*' || equation[i] == '/')
-                {
-                    
-                }
-            }
-        }
-        void divide()
-        {
-
         }
         static void calculationtwo(string leftnumber, string rightnumber, string operation, out double result)
         {
@@ -130,6 +116,33 @@ namespace Calculator
         //        }
         //    Console.WriteLine("Result of the calculate is " + res);
         //}
+
+        static void calculate(string mathstr, out double res)
+        {
+            res = 0;
+            string[] mathparts = null;
+            makeequation(ref mathstr, out mathparts);
+            if (mathstr.Contains("*") || mathstr.Contains("/"))
+            {
+                for (int i = 0; i < mathparts.Length; i++)
+                {
+                    if (mathparts[i] == "*" || mathparts[i] == "/")
+                    {
+                        calculationtwo(mathparts[i - 1], mathparts[i + 1], mathparts[i], out res);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < mathparts.Length; i++)
+                {
+                    if (mathparts[i] == "+" || mathparts[i] == "-")
+                    {
+                        calculationtwo(mathparts[i - 1], mathparts[i + 1], mathparts[i], out res);
+                    }
+                }
+            }
+        }
         static void loopindex(string eq, ref int leftbracket, ref int rightbracket)
         {
             for (int i = 0; i < eq.Length; i++)
