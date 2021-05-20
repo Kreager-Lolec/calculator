@@ -26,7 +26,7 @@ namespace Calculator
                     string[] subeqarr;
                     makeequation(ref tsq, out subeqarr);
                     double result;
-                    calculationtwo(subeqarr[0],subeqarr[2],subeqarr[1], out result);
+                    calculationtwo(subeqarr[0], subeqarr[2], subeqarr[1], out result);
                     Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                     equation = equation.Replace("(" + tsq + ")", result.ToString());
                 }
@@ -73,6 +73,20 @@ namespace Calculator
             equation = equation.Trim(' ');
             resultarr = resulteq.Split(' ');
             Console.WriteLine("Local arythmetic will be such: " + resulteq);
+        }
+        void muldivfirst(string equation)
+        {
+            for (int i = 0; i < equation.Length; i++)
+            {
+                if (equation[i] == '*' || equation[i] == '/')
+                {
+                    
+                }
+            }
+        }
+        void divide()
+        {
+
         }
         static void calculationtwo(string leftnumber, string rightnumber, string operation, out double result)
         {
