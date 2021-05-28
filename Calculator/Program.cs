@@ -6,6 +6,20 @@ namespace Calculator
 {
     class Program
     {
+        class InvalidInputException : Exception
+        {
+            public InvalidInputException()
+            {
+
+            }
+
+            public InvalidInputException(string name)
+                : base(String.Format("Invalid input: {0}", name))
+            {
+
+            }
+
+        }
         static void Main(string[] args)
         {
             //(1+2*(4+5*(2+3)*2)*5)+9==550
@@ -13,33 +27,74 @@ namespace Calculator
             {
                 Console.WriteLine("You must put two numbers, and operation,which you want to do with them \n" +
                    "You have six operations: " +
-                   "Example of correct input: 1+1; 1 + 1; sqrt(5); 5^1/2 \n" +
+                   "Example of correct input: 1+1; 1 + 1; sqrt(5); 5^1/2; 1,2 + 1,3 \n" +
                    "Enter: ");
                 string equation = Console.ReadLine();
-                int leftbracket = 0;
-                int rightbracket = 0;
+                string dispEq = equation;
+                bool containsPoint = false;
+                if (equation.Contains('.'))
+                {
+                    containsPoint = true;
+                    equation = equation.Replace('.', ',');
+                    dispEq = dispEq.Replace(',', '.');
+                }
+                int leftBracket = 0;
+                int rightBracket = 0;
                 double result = 0;
                 string tsq = "";
-                List<string> sublist;
-                while (equation.Contains("*") || equation.Contains("/") || equation.Contains("+") || equation.Contains("-"))
+                List<string> subList;
+                string tempSqrt = equation;
+                while (tempSqrt.Contains("sqrt"))
                 {
-                    while (equation.Contains('(') && equation.Contains(')'))
+                    double rootSqrt;
+                    string extractedSqrt = ExtractSqrt(ref tempSqrt);
+                    tempSqrt = tempSqrt.Replace("sqrt(" + extractedSqrt + ")", "");
+                    validateequation(ref extractedSqrt, out subList);
+                    Console.WriteLine("Values of extracted Sqrt: ");
+                    foreach (var item in subList)
                     {
-                        bracketindex(equation, ref leftbracket, ref rightbracket);
-                        string subequation = Substring(equation, leftbracket, rightbracket);
-                        tsq = subequation;
-                        validateequation(ref tsq, out sublist);
-                        result = Prioritiescalculation(ref subequation, ref sublist);
-                        equation = equation.Replace("(" + tsq + ")", result.ToString());
-                        Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
+                        Console.WriteLine(item);
                     }
-                    tsq = equation;
-                    validateequation(ref equation, out sublist);
-                    result = Prioritiescalculation(ref equation, ref sublist);
-                    equation = equation.Replace(tsq, result.ToString());
+                    if (extractedSqrt[0] == '-')
+                    {
+                        throw new InvalidInputException(equation);
+                    }
+                    else if (subList.Count == 1)
+                    {
+                        Console.WriteLine(extractedSqrt.Split().Length);
+                        rootSqrt = Math.Sqrt(double.Parse(extractedSqrt));
+                    }
+                    else
+                    {
+                        rootSqrt = Math.Sqrt(Prioritiescalculation(ref extractedSqrt, ref subList));
+                    }
+                    Console.WriteLine("Result of: " + "sqrt(" + extractedSqrt + ")" + " is: " + rootSqrt);
+                    equation = equation.Replace("sqrt(" + extractedSqrt + ")", rootSqrt.ToString());
+                }
+                while (equation.Contains('(') && equation.Contains(')'))
+                {
+                    bracketindex(equation, ref leftBracket, ref rightBracket);
+                    string subEquation = Substring(equation, leftBracket, rightBracket);
+                    tsq = subEquation;
+                    validateequation(ref tsq, out subList);
+                    result = Prioritiescalculation(ref subEquation, ref subList);
+                    equation = equation.Replace("(" + tsq + ")", result.ToString());
                     Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                 }
-                Console.WriteLine("Now equation is: " + equation);
+                while (equation.Contains("*") || equation.Contains("/") || equation.Contains("+") || equation.Contains("-") || equation.Contains("^"))
+                {
+                    validateequation(ref equation, out subList);
+                    if (subList.Count >= 3)
+                    {
+                        tsq = equation;
+                        result = Prioritiescalculation(ref equation, ref subList);
+                        equation = equation.Replace(tsq, result.ToString());
+                        Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
+                    }
+                    if (equation.Contains("-") && equation.Split().Length < 3) break;
+                }
+                if (containsPoint) equation = equation.Replace(',', '.');
+                Console.WriteLine("Resulting value of " + dispEq + " is: " + equation);
             }
             catch (Exception ex)
             {
@@ -47,6 +102,47 @@ namespace Calculator
             }
 
         }
+
+        static string ExtractSqrt(ref string equation)
+        {
+            int startIndex = -1;
+            int endIndex = -1;
+            string subEq = "";
+            if (!isnumber(equation[0]) && equation[0] != '-' && equation[0] != 's')
+            {
+                equation = equation.Remove(0, 1);
+            }
+            Console.WriteLine("Equation after removing: " + equation);
+            for (int i = 0; i < equation.Length; i++)
+            {
+                if (equation[i] == 's' && equation[i + 1] == 'q' && equation[i + 2] == 'r' && equation[i + 3] == 't' && equation[i + 4] == '(')
+                {
+                    startIndex = i + 5;
+                    for (int j = startIndex; j < equation.Length; j++)
+                    {
+                        if (equation[j] == ')')
+                        {
+                            endIndex = j;
+                            subEq = equation.Substring(startIndex, endIndex - startIndex);
+                            Console.WriteLine("Sqrt subequation is such: " + equation.Substring(startIndex, endIndex - startIndex));
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return subEq;
+        }
+
+        //static double rootsqrt(string extractedSqrt)
+        //{
+        //    List<string> subList;
+        //    validateequation(ref extractedSqrt, out subList);
+        //    return Math.Sqrt(Prioritiescalculation(ref extractedSqrt, ref subList));
+        //}
         /// <summary>
         /// this method check if element of string is bumber of dot('.')
         /// </summary>
@@ -54,7 +150,7 @@ namespace Calculator
         /// <returns></returns>
         static bool isnumber(char symbol)
         {
-            if (char.IsDigit(symbol) || symbol == '.')
+            if (char.IsDigit(symbol) || symbol == ',')
             {
                 return true;
             }
@@ -64,12 +160,12 @@ namespace Calculator
         /// return index of border brackers
         /// </summary>
         /// <param name="equation"></param>
-        /// <param name="leftbracket"></param>
-        /// <param name="rightbracket"></param>
+        /// <param name="leftBracket"></param>
+        /// <param name="rightBracket"></param>
         /// <returns></returns>
-        static string Substring(string equation, int leftbracket, int rightbracket)
+        static string Substring(string equation, int leftBracket, int rightBracket)
         {
-            return equation.Substring(leftbracket, rightbracket - leftbracket).Trim('(', ')');
+            return equation.Substring(leftBracket, rightBracket - leftBracket).Trim('(', ')');
         }
         /// <summary>
         /// 
@@ -94,55 +190,75 @@ namespace Calculator
         {
             equation = equation.Trim(' ');
             equation = equation.Replace(" ", "");
-            string resulteq = equation[0].ToString();
+            string resultEq = equation[0].ToString();
             for (int i = 1; i < equation.Length; ++i)
             {
                 if (isnumber(equation[i]) && isnumber(equation[i - 1]))// 
                 {
-                    resulteq += equation[i];
+                    resultEq += equation[i];
                 }
                 else if (isnumber(equation[i]) && !isnumber(equation[i - 1]))
                 {
-                    resulteq += " " + equation[i];
+                    resultEq += " " + equation[i];
                 }
                 else if (!isnumber(equation[i]))
                 {
-                    resulteq += " " + equation[i] + " ";
+                    resultEq += " " + equation[i] + " ";
                 }
             }
-            resulteq = resulteq.Replace("  ", " ");
+            resultEq = resultEq.Replace("  ", " ");
             equation = equation.Trim(' ');
-            resultarr = ConvertToList(resulteq.Split());
-            Console.WriteLine("Local arythmetic will be such: " + resulteq);
+            resultarr = ConvertToList(resultEq.Split());
+            for (int i = 0; i < resultarr.Count; i++)
+            {
+                if (resultarr[i] == "^" && resultarr[i + 1] == "-")
+                {
+                    resultarr[i + 2] = "-" + resultarr[i + 2];
+                    resultarr.RemoveAt(i + 1);
+                    foreach (var item in resultarr)
+                    {
+                        Console.WriteLine(item);
+                    }
+                }
+                else if (resultarr[i] == "-")
+                {
+                    resultarr[i] = "+";
+                    resultarr[i + 1] = "-" + resultarr[i + 1];
+                }
+            }
+            Console.WriteLine("Local arythmetic will be such: " + resultEq);
         }
         /// <summary>
         /// this method do operations with two numbers
         /// </summary>
-        /// <param name="leftnumber"></param>
-        /// <param name="rightnumber"></param>
+        /// <param name="leftNumber"></param>
+        /// <param name="rightNumber"></param>
         /// <param name="operation"></param>
         /// <param name="result"></param>
-        static void calculationtwo(string leftnumber, string rightnumber, string operation, out double result)
+        static void calculationtwo(string leftNumber, string rightNumber, string operation, out double result)
         {
             char sign = operation[0];
-            Console.WriteLine("Leftnumber: " + leftnumber);
-            Console.WriteLine("Rightnumber: " + rightnumber);
-            double lnum = double.Parse(leftnumber);
-            double rnum = double.Parse(rightnumber);
+            Console.WriteLine("leftNumber: " + leftNumber);
+            Console.WriteLine("rightNumber: " + rightNumber);
+            double lNum = double.Parse(leftNumber);
+            double rNum = double.Parse(rightNumber);
             result = 0;
             switch (sign)
             {
                 case '+':
-                    result = lnum + rnum;
+                    result = lNum + rNum;
                     break;
                 case '-':
-                    result = lnum - rnum;
+                    result = lNum - rNum;
                     break;
                 case '*':
-                    result = lnum * rnum;
+                    result = lNum * rNum;
                     break;
                 case '/':
-                    result = lnum / rnum;
+                    result = lNum / rNum;
+                    break;
+                case '^':
+                    result = Math.Pow(lNum, rNum);
                     break;
                 default:
                     Console.WriteLine("Invalid operation. Sigh: " + sign);
@@ -152,99 +268,102 @@ namespace Calculator
         /// <summary>
         /// this method check what operation we shoud do foremost using priority of mathematical operands
         /// </summary>
-        /// <param name="mathstr"></param>
-        /// <param name="mathparts"></param>
+        /// <param name="mathStr"></param>
+        /// <param name="mathParts"></param>
         /// <returns></returns>
-        static double Prioritiescalculation(ref string mathstr, ref List<string> mathparts)
+        static double Prioritiescalculation(ref string mathStr, ref List<string> mathParts)
         {
             double res = 0;
-            string subeq = "";
-            validateequation(ref mathstr,out mathparts);
-            if (mathstr.Contains("*") || mathstr.Contains("/"))
+            string subEq = "";
+            validateequation(ref mathStr, out mathParts);
+            if (mathStr.Contains("^") || mathStr.Contains("pow"))
             {
-                for (int i = 0; i < mathparts.Count; i++)
+                for (int i = 1; i < mathParts.Count; i++)
                 {
-                    if (mathparts[i] == "*" || mathparts[i] == "/")//If element is multiplier or diviser, we get operand and neighboring elements to make calculations
+                    if (mathParts[i] == "^")//If element is multiplier or diviser, we get operand and neighboring elements to make calculations
                     {
-                        calculationtwo(mathparts[i - 1], mathparts[i + 1], mathparts[i], out res);//Taking parts chosen to get the value
-                        subeq += mathparts[i - 1];
-                        subeq += " " + mathparts[i];
-                        subeq += " " + mathparts[i + 1];//Building subequation string to replace
-                        mathparts.RemoveAt(i - 1);
-                        //Console.WriteLine("Length of list: " + mathparts.Count);
-                        mathparts.RemoveAt(i - 1);
-                        //Console.WriteLine("Length of list: " + mathparts.Count);
-                        mathparts.RemoveAt(i - 1);
-                        //Console.WriteLine("Length of list: " + mathparts.Count);
-                        mathparts.Insert(i - 1, res.ToString());
-                        i--;
-                        //Console.WriteLine("List of math parts : ");
-                        //foreach (var item in mathparts)
-                        //{
-                        //    Console.WriteLine(item);
-                        //}
-                        mathstr = mathstr.Replace(subeq, res.ToString());
-                        Console.WriteLine("Current equation: " + mathstr);
+                        calculationtwo(mathParts[i - 1], mathParts[i + 1], mathParts[i], out res);//Taking parts chosen to get the value
+                        subEq += mathParts[i - 1];
+                        subEq += " " + mathParts[i];
+                        subEq += " " + mathParts[i + 1];//Building subEquation string to replace
+                        i--;/* Because of searching the sign we are now located on the middle index, and for better understanding of replacement we shift back once*/
+                        mathParts.RemoveAt(i);
+                        mathParts.RemoveAt(i);
+                        mathParts.RemoveAt(i);//Removing elements relating to subEquation 
+                        mathParts.Insert(i, res.ToString());//Replacing removed subEquation with value
+                        mathStr = mathStr.Replace(subEq, res.ToString());
+                        Console.WriteLine("Current equation: " + mathStr);
                     }
                 }
             }
-            if ((mathstr.Contains("+") || mathstr.Contains("-")))
+            if (mathStr.Contains("*") || mathStr.Contains("/"))
             {
-                for (int i = 0; i < mathparts.Count; i++)
+                for (int i = 1; i < mathParts.Count; i++)
                 {
-                    if (mathparts[i] == "+" || mathparts[i] == "-")
+                    if (mathParts[i] == "*" || mathParts[i] == "/")//If element is multiplier or diviser, we get operand and neighboring elements to make calculations
                     {
-                        calculationtwo(mathparts[i - 1], mathparts[i + 1], mathparts[i], out res);//Taking parts chosen to get the value
-                        subeq += mathparts[i - 1];
-                        subeq += " " + mathparts[i];
-                        subeq += " " + mathparts[i + 1];//Building subequation string to replace
-                        mathparts.RemoveAt(i - 1);
-                        //Console.WriteLine("Length of list: " + mathparts.Count);
-                        mathparts.RemoveAt(i - 1);
-                        //Console.WriteLine("Length of list: " + mathparts.Count);
-                        mathparts.RemoveAt(i - 1);
-                        //Console.WriteLine("Length of list: " + mathparts.Count);
-                        mathparts.Insert(i - 1, res.ToString());
-                        //Console.WriteLine("List of math parts : ");
+                        calculationtwo(mathParts[i - 1], mathParts[i + 1], mathParts[i], out res);//Taking parts chosen to get the value
+                        subEq += mathParts[i - 1];
+                        subEq += " " + mathParts[i];
+                        subEq += " " + mathParts[i + 1];//Building subEquation string to replace
+                        i--;/* Because of searching the sign we are now located on the middle index, and for better understanding of replacement we shift back once*/
+                        mathParts.RemoveAt(i);
+                        mathParts.RemoveAt(i);
+                        mathParts.RemoveAt(i);//Removing elements relating to subEquation 
+                        mathParts.Insert(i, res.ToString());//Replacing removed subEquation with value
+                        mathStr = mathStr.Replace(subEq, res.ToString());
+                        Console.WriteLine("Current equation: " + mathStr);
+                    }
+                }
+            }
+            if ((mathStr.Contains("+") || mathStr.Contains("-")))
+            {
+                for (int i = 1; i < mathParts.Count; i++)
+                {
+                    if (mathParts[i] == "+" || mathParts[i] == "-")
+                    {
+                        calculationtwo(mathParts[i - 1], mathParts[i + 1], mathParts[i], out res);//Taking parts chosen to get the value
+                        subEq += mathParts[i - 1];
+                        subEq += " " + mathParts[i];
+                        subEq += " " + mathParts[i + 1];//Building subEquation string to replace
                         i--;
-                        //foreach (var item in mathparts)
-                        //{
-                        //    Console.WriteLine(item);
-                        //}
-                        //mathstr = mathstr.Replace(subeq, res.ToString());
-                        Console.WriteLine("Current equation: " + mathstr);
+                        mathParts.RemoveAt(i);
+                        mathParts.RemoveAt(i);
+                        mathParts.RemoveAt(i);
+                        mathParts.Insert(i, res.ToString());
+                        Console.WriteLine("Current equation: " + mathStr);
                     }
                 }
             }
             return res;
         }
-        static string Buildmathstring(List<string> mathparts)
+        static string BuildmathString(List<string> mathParts)
         {
-            string mathstring = "";
-            for (int i = 0; i < mathparts.Count; i++)
+            string mathString = "";
+            for (int i = 0; i < mathParts.Count; i++)
             {
-                mathstring += " " + mathparts[i];
+                mathString += " " + mathParts[i];
             }
-            return mathstring.Trim(' ');
+            return mathString.Trim(' ');
         }
-       
+
         /// <summary>
         /// check indexes of brackets in current equation
         /// </summary>
         /// <param name="eq"></param>
-        /// <param name="leftbracket"></param>
-        /// <param name="rightbracket"></param>
-        static void bracketindex(string eq, ref int leftbracket, ref int rightbracket)
+        /// <param name="leftBracket"></param>
+        /// <param name="rightBracket"></param>
+        static void bracketindex(string eq, ref int leftBracket, ref int rightBracket)
         {
             for (int i = 0; i < eq.Length; i++)
             {
                 if (eq[i] == '(')
                 {
-                    leftbracket = i;
+                    leftBracket = i;
                 }
                 if (eq[i] == ')')
                 {
-                    rightbracket = i;
+                    rightBracket = i;
                     break;
                 }
             }
