@@ -44,44 +44,35 @@ namespace Calculator
                 string tsq = "";
                 List<string> subList;
                 string tempSqrt = equation;
-                while (tempSqrt.Contains("sqrt"))
+                double rootSqrt;
+                string extractedSqrt = "";
+                bool oneSqrt = true;
+                while (equation.Contains("sqrt"))
                 {
+                    bool oneExtract = true;
                     string sign = "";
                     if (tempSqrt[0] == '-' && !isnumber(equation[0]) && equation[0] != 's')
                     {
                         sign = tempSqrt[0].ToString();
                         tempSqrt = tempSqrt.Remove(0, 1);
                     }
-                    double rootSqrt;
-                    string extractedSqrt = ExtractSqrt(ref tempSqrt);
-                    tempSqrt = tempSqrt.Replace("sqrt(" + extractedSqrt + ")", "");
+                    extractedSqrt = tempSqrt;
+                    tempSqrt = ExtractSqrt(ref tempSqrt, oneExtract, ref oneSqrt);
+                    oneExtract = false;
+                    extractedSqrt = ExtractSqrt(ref extractedSqrt, oneExtract, ref oneSqrt);
                     validateequation(ref extractedSqrt, out subList);
-                    Console.WriteLine("Values of extracted Sqrt: ");
-                    foreach (var item in subList)
-                    {
-                        Console.WriteLine(item);
-                    }
-                    if (extractedSqrt[0] == '-')
-                    {
-                        throw new InvalidInputException(equation);
-                    }
-                    else if (subList.Count == 1)
-                    {
-                        rootSqrt = Math.Sqrt(double.Parse(extractedSqrt));
-                    }
-                    else
+                    if (oneSqrt)
                     {
                         rootSqrt = Math.Sqrt(Prioritiescalculation(ref extractedSqrt, ref subList));
                     }
-                    if (sign != "")
-                    {
-                        Console.WriteLine("Result of: " + sign + "sqrt(" + extractedSqrt + ")" + " is: " + sign + rootSqrt);
-                    }
                     else
                     {
-                        Console.WriteLine("Result of: " + "sqrt(" + extractedSqrt + ")" + " is: " + rootSqrt);
+                        rootSqrt = double.Parse(extractedSqrt);
                     }
-                    equation = equation.Replace("sqrt(" + extractedSqrt + ")", rootSqrt.ToString());
+                    Console.WriteLine(rootSqrt);
+                    Console.WriteLine(extractedSqrt);
+                    equation = equation.Replace("sqrt(" + tempSqrt + ")", rootSqrt.ToString());
+                    equation = equation.Trim(')');
                 }
                 while (equation.Contains('(') && equation.Contains(')'))
                 {
@@ -112,26 +103,85 @@ namespace Calculator
             {
                 Console.WriteLine(new StackTrace().GetFrame(0).GetMethod().Name + ": " + ex.Message);
             }
-
         }
+        //static double SqrtCalculation(ref string mathStr, ref string sign, string startSqrt)
+        //{
+        //    double res = 0;
+        //    double counterSqrt = 0;
+        //    string subEq = "";
+        //    List<string> subList;
+        //    while (mathStr.Contains("sqrt"))
+        //    {
+        //        counterSqrt += 1;
+        //        subEq = ExtractSqrt(ref mathStr);
+        //        mathStr = mathStr.Replace("sqrt(" + subEq + ")", subEq);
+        //        Console.WriteLine("SqrtCalculation: " + mathStr);
+        //    }
+        //    Console.WriteLine(mathStr);
+        //    while (counterSqrt != 0)
+        //    {
+        //        if (mathStr[0] == '-')
+        //        {
+        //            throw new InvalidInputException(startSqrt);
+        //        }
+        //        validateequation(ref mathStr, out subList);
+        //        res = Math.Sqrt(Prioritiescalculation(ref mathStr, ref subList));
+        //        counterSqrt -= 1;
+        //        mathStr = res.ToString();
+        //    }
+        //    Console.WriteLine("SqrtCalculation: " + res);
+        //    return res;
+        //}
 
-        static string ExtractSqrt(ref string equation)
+        static string ExtractPow(ref string equation)
         {
-            int startIndex = -1;
+            return "";
+        }
+        static string ExtractSqrt(ref string equation, bool oneExtract, ref bool oneSqrt)
+        {
+            int startIndex = equation.IndexOf('t') + 1;//Get index of the first bracket
             int endIndex = -1;
             string subEq = "";
-            for (int i = 0; i < equation.Length; i++)
+            string roootSqrt = "";
+            string internalExtSqrt;
+            List<string> subList;
+            for (int i = startIndex; i < equation.Length; i++)
             {
-                if (equation[i] == 's' && equation[i + 1] == 'q' && equation[i + 2] == 'r' && equation[i + 3] == 't' && equation[i + 4] == '(')
+                if (equation[i] == '(')//Check if bracket exists
                 {
-                    startIndex = i + 5;
                     for (int j = startIndex; j < equation.Length; j++)
                     {
-                        if (equation[j] == ')')
+                        if (equation[j] == ')')//Check if the next bracket exists
                         {
-                            endIndex = j;
-                            subEq = equation.Substring(startIndex, endIndex - startIndex);
-                            Console.WriteLine("Sqrt subequation is such: " + equation.Substring(startIndex, endIndex - startIndex));
+                            startIndex++;//Rise index to get substring correctly
+                            endIndex = equation.LastIndexOf(')');/*Check the last index of bracket to get correct equation: sqrt(sqrt(4)*4) Index will be: 14; There we have issue, that should be fixed: sqrt(4)*(8+9) - this equation 
+                                                                  wouldn't calculated correctly*/
+                            subEq = equation.Substring(startIndex, endIndex - startIndex);//Get substring from current equation
+                            if (!subEq.Contains("sqrt"))//If current substring does not contain any sqrt, it would be trimmed: It's useful, when you have string: 4)
+                            {
+                                subEq = subEq.Trim(')');
+                                oneSqrt = true;//This bool value give us information,if root will be extracted in the main function
+                            }
+                            while (subEq.Contains("sqrt") && !oneExtract)//If current substring contains sqrt, we use recursion, іщ the more sqrt we have, the more times we will extract the root 
+                            {
+                                internalExtSqrt = ExtractSqrt(ref subEq, oneExtract, ref oneSqrt);//Recursion
+                                subEq = subEq.Replace("sqrt(" + internalExtSqrt + ")", internalExtSqrt);//Replacing substring by internal extracted sqrt
+                                subList = ConvertToList(internalExtSqrt.Split());//Creating list to calculate undersqrt equation
+                                roootSqrt = Math.Sqrt(Prioritiescalculation(ref subEq, ref subList)).ToString();//Calculating root of current sqrt
+                                if (!internalExtSqrt.Contains("sqrt"))//If internal extracted equation does not contain any sqrt, we replace the main equation by substring ( equation = sqrt(sqrt(4); subeq = 4 => equation = sqrt(4)
+                                {
+                                    equation = equation.Replace("sqrt(" + subEq + ")", roootSqrt);
+                                    subEq = roootSqrt;
+                                    oneSqrt = true;
+                                }
+                                //equation = subEq;
+                                //oneSqrt = false;
+                            }
+                            if (subEq[0] == '-')//sqrt(-4) does not exist
+                            {
+                                throw new InvalidInputException(equation);
+                            }
+                            Console.WriteLine("Sqrt subequation is such: " + subEq + "; Sqrt result: " + roootSqrt);
                             break;
                         }
                     }
@@ -144,12 +194,6 @@ namespace Calculator
             return subEq;
         }
 
-        //static double rootsqrt(string extractedSqrt)
-        //{
-        //    List<string> subList;
-        //    validateequation(ref extractedSqrt, out subList);
-        //    return Math.Sqrt(Prioritiescalculation(ref extractedSqrt, ref subList));
-        //}
         /// <summary>
         /// this method check if element of string is bumber of dot('.')
         /// </summary>
@@ -282,9 +326,11 @@ namespace Calculator
         {
             double res = 0;
             string subEq = "";
+            bool Isonenumber = true;
             validateequation(ref mathStr, out mathParts);
             if (mathStr.Contains("^") || mathStr.Contains("pow"))
             {
+                Isonenumber = false;
                 for (int i = 1; i < mathParts.Count; i++)
                 {
                     if (mathParts[i] == "^")//If element is multiplier or diviser, we get operand and neighboring elements to make calculations
@@ -305,6 +351,7 @@ namespace Calculator
             }
             if (mathStr.Contains("*") || mathStr.Contains("/"))
             {
+                Isonenumber = false;
                 for (int i = 1; i < mathParts.Count; i++)
                 {
                     if (mathParts[i] == "*" || mathParts[i] == "/")//If element is multiplier or diviser, we get operand and neighboring elements to make calculations
@@ -325,6 +372,7 @@ namespace Calculator
             }
             if ((mathStr.Contains("+") || mathStr.Contains("-")))
             {
+                Isonenumber = false;
                 for (int i = 1; i < mathParts.Count; i++)
                 {
                     if (mathParts[i] == "+" || mathParts[i] == "-")
@@ -341,6 +389,10 @@ namespace Calculator
                         Console.WriteLine("Current equation: " + mathStr);
                     }
                 }
+            }
+            if (Isonenumber)
+            {
+                res = double.Parse(mathStr);
             }
             return res;
         }

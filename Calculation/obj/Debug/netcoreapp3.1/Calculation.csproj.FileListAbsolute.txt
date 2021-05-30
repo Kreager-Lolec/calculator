@@ -10,3 +10,4 @@ D:\C#projects\Calculation\Calculation\obj\Debug\netcoreapp3.1\Calculation.csproj
 D:\C#projects\Calculation\Calculation\obj\Debug\netcoreapp3.1\Calculation.dll
 D:\C#projects\Calculation\Calculation\obj\Debug\netcoreapp3.1\Calculation.pdb
 D:\C#projects\Calculation\Calculation\obj\Debug\netcoreapp3.1\Calculation.genruntimeconfig.cache
+D:\C#projects\Calculation\Calculation\obj\Debug\netcoreapp3.1\Calculation.csprojAssemblyReference.cache
