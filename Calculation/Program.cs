@@ -43,36 +43,28 @@ namespace Calculator
                 double result = 0;
                 string tsq = "";
                 List<string> subList;
-                string tempSqrt = equation;
-                double rootSqrt;
-                string extractedSqrt = "";
-                bool oneSqrt = true;
-                while (equation.Contains("sqrt"))
+                while (equation.Contains("sqrt") || equation.Contains("pow"))
                 {
-                    bool oneExtract = true;
-                    string sign = "";
-                    if (tempSqrt[0] == '-' && !isnumber(equation[0]) && equation[0] != 's')
+                    bracketindex(equation, ref leftBracket, ref rightBracket);
+                    string subEquation = Substring(equation, leftBracket, rightBracket);
+                    tsq = subEquation;
+                    validateequation(ref tsq, out subList);
+                    if (equation.Contains("sqrt"))
                     {
-                        sign = tempSqrt[0].ToString();
-                        tempSqrt = tempSqrt.Remove(0, 1);
+                        result = Math.Sqrt(Prioritiescalculation(ref subEquation, ref subList));
+                        equation = equation.Replace("sqrt(" + tsq + ")", result.ToString());
                     }
-                    extractedSqrt = tempSqrt;
-                    tempSqrt = ExtractSqrt(ref tempSqrt, oneExtract, ref oneSqrt);
-                    oneExtract = false;
-                    extractedSqrt = ExtractSqrt(ref extractedSqrt, oneExtract, ref oneSqrt);
-                    validateequation(ref extractedSqrt, out subList);
-                    if (oneSqrt)
+                    else if (equation.Contains("pow"))
                     {
-                        rootSqrt = Math.Sqrt(Prioritiescalculation(ref extractedSqrt, ref subList));
+                        equation = equation.Replace("pow(" + tsq + ")", tsq);
+                        validateequation(ref tsq, out subList);
+                        foreach (var item in subList)
+                        {
+                            Console.WriteLine(item);
+                        }
+                        Console.WriteLine(equation);
                     }
-                    else
-                    {
-                        rootSqrt = double.Parse(extractedSqrt);
-                    }
-                    Console.WriteLine(rootSqrt);
-                    Console.WriteLine(extractedSqrt);
-                    equation = equation.Replace("sqrt(" + tempSqrt + ")", rootSqrt.ToString());
-                    equation = equation.Trim(')');
+                    Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                 }
                 while (equation.Contains('(') && equation.Contains(')'))
                 {
@@ -104,94 +96,9 @@ namespace Calculator
                 Console.WriteLine(new StackTrace().GetFrame(0).GetMethod().Name + ": " + ex.Message);
             }
         }
-        //static double SqrtCalculation(ref string mathStr, ref string sign, string startSqrt)
-        //{
-        //    double res = 0;
-        //    double counterSqrt = 0;
-        //    string subEq = "";
-        //    List<string> subList;
-        //    while (mathStr.Contains("sqrt"))
-        //    {
-        //        counterSqrt += 1;
-        //        subEq = ExtractSqrt(ref mathStr);
-        //        mathStr = mathStr.Replace("sqrt(" + subEq + ")", subEq);
-        //        Console.WriteLine("SqrtCalculation: " + mathStr);
-        //    }
-        //    Console.WriteLine(mathStr);
-        //    while (counterSqrt != 0)
-        //    {
-        //        if (mathStr[0] == '-')
-        //        {
-        //            throw new InvalidInputException(startSqrt);
-        //        }
-        //        validateequation(ref mathStr, out subList);
-        //        res = Math.Sqrt(Prioritiescalculation(ref mathStr, ref subList));
-        //        counterSqrt -= 1;
-        //        mathStr = res.ToString();
-        //    }
-        //    Console.WriteLine("SqrtCalculation: " + res);
-        //    return res;
-        //}
-
         static string ExtractPow(ref string equation)
         {
             return "";
-        }
-        static string ExtractSqrt(ref string equation, bool oneExtract, ref bool oneSqrt)
-        {
-            int startIndex = equation.IndexOf('t') + 1;//Get index of the first bracket
-            int endIndex = -1;
-            string subEq = "";
-            string roootSqrt = "";
-            string internalExtSqrt;
-            List<string> subList;
-            for (int i = startIndex; i < equation.Length; i++)
-            {
-                if (equation[i] == '(')//Check if bracket exists
-                {
-                    for (int j = startIndex; j < equation.Length; j++)
-                    {
-                        if (equation[j] == ')')//Check if the next bracket exists
-                        {
-                            startIndex++;//Rise index to get substring correctly
-                            endIndex = equation.LastIndexOf(')');/*Check the last index of bracket to get correct equation: sqrt(sqrt(4)*4) Index will be: 14; There we have issue, that should be fixed: sqrt(4)*(8+9) - this equation 
-                                                                  wouldn't calculated correctly*/
-                            subEq = equation.Substring(startIndex, endIndex - startIndex);//Get substring from current equation
-                            if (!subEq.Contains("sqrt"))//If current substring does not contain any sqrt, it would be trimmed: It's useful, when you have string: 4)
-                            {
-                                subEq = subEq.Trim(')');
-                                oneSqrt = true;//This bool value give us information,if root will be extracted in the main function
-                            }
-                            while (subEq.Contains("sqrt") && !oneExtract)//If current substring contains sqrt, we use recursion, іщ the more sqrt we have, the more times we will extract the root 
-                            {
-                                internalExtSqrt = ExtractSqrt(ref subEq, oneExtract, ref oneSqrt);//Recursion
-                                subEq = subEq.Replace("sqrt(" + internalExtSqrt + ")", internalExtSqrt);//Replacing substring by internal extracted sqrt
-                                subList = ConvertToList(internalExtSqrt.Split());//Creating list to calculate undersqrt equation
-                                roootSqrt = Math.Sqrt(Prioritiescalculation(ref subEq, ref subList)).ToString();//Calculating root of current sqrt
-                                if (!internalExtSqrt.Contains("sqrt"))//If internal extracted equation does not contain any sqrt, we replace the main equation by substring ( equation = sqrt(sqrt(4); subeq = 4 => equation = sqrt(4)
-                                {
-                                    equation = equation.Replace("sqrt(" + subEq + ")", roootSqrt);
-                                    subEq = roootSqrt;
-                                    oneSqrt = true;
-                                }
-                                //equation = subEq;
-                                //oneSqrt = false;
-                            }
-                            if (subEq[0] == '-')//sqrt(-4) does not exist
-                            {
-                                throw new InvalidInputException(equation);
-                            }
-                            Console.WriteLine("Sqrt subequation is such: " + subEq + "; Sqrt result: " + roootSqrt);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-            return subEq;
         }
 
         /// <summary>
