@@ -45,14 +45,26 @@ namespace Calculator
                 List<string> subList;
                 while (equation.Contains("sqrt") || equation.Contains("pow"))
                 {
+                    //bracketindex(equation, ref leftBracket, ref rightBracket);
+                    //string subEquation = equation.Substring(leftBracket, rightBracket - leftBracket + 1);
+                    //tsq = subEquation;
+                    //validateequation(ref tsq, out subList);
                     bracketindex(equation, ref leftBracket, ref rightBracket);
                     string subEquation = Substring(equation, leftBracket, rightBracket);
                     tsq = subEquation;
                     validateequation(ref tsq, out subList);
                     if (equation.Contains("sqrt"))
                     {
-                        result = Math.Sqrt(Prioritiescalculation(ref subEquation, ref subList));
-                        equation = equation.Replace("sqrt(" + tsq + ")", result.ToString());
+                        if (equation[leftBracket - 1] == 't')
+                        {
+                            result = Math.Sqrt(Prioritiescalculation(ref subEquation, ref subList));
+                            equation = equation.Replace("sqrt(" + tsq + ")", result.ToString());
+                        }
+                        else
+                        {
+                            result = Prioritiescalculation(ref subEquation, ref subList);
+                            equation = equation.Replace("(" + tsq + ")", result.ToString());
+                        }
                     }
                     else if (equation.Contains("pow"))
                     {
@@ -66,6 +78,23 @@ namespace Calculator
                     }
                     Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                 }
+                //if (subEquation.Contains("(") && subEquation.Contains(")"))
+                //{
+                //    bracketindex(subEquation, ref leftBracket, ref rightBracket);
+                //    subEquation = Substring(subEquation, leftBracket, rightBracket);
+                //    tsq = subEquation;
+                //    result = Math.Sqrt(Prioritiescalculation(ref tsq, ref subList);
+                //    validateequation(ref tsq, out subList);
+                //    equation = equation.Replace("(" + tsq + ")", result.ToString());
+                //    Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
+                //}
+                //else if (equation.Contains("pow"))
+                //{
+                //    equation = equation.Replace("pow(" + tsq + ")", tsq);
+                //    ExtractPow(ref equation);
+                //    subList = ConvertToList(equation.Split("^"));
+                //}
+                //}
                 while (equation.Contains('(') && equation.Contains(')'))
                 {
                     bracketindex(equation, ref leftBracket, ref rightBracket);
@@ -96,9 +125,55 @@ namespace Calculator
                 Console.WriteLine(new StackTrace().GetFrame(0).GetMethod().Name + ": " + ex.Message);
             }
         }
-        static string ExtractPow(ref string equation)
+        static void ExtractPow(ref string equation)
         {
-            return "";
+            int countComa = 0;//Value to calculate count of comas
+            int firstComa = -1;//Value to get index of the first coma in the equation
+            int comaBetweenValues = -1;//Value to get index of the coma, which will be replaced by "^"
+            string newEq = "";
+            for (int i = 0; i < equation.Length; i++)
+            {
+                if (equation[i] == ')' && equation[i + 2] == '(' && equation[i + 1] == ',')
+                {
+                    comaBetweenValues = i + 1;
+                    break;
+                }
+                if (countComa > 1 && equation[i] == '+' || equation[i] == '-' || equation[i] == '*' || equation[i] == '/')/*If we have operands in the equation, 
+                 and we have at least one fraction number (pow(2,3+3,1,2+2)), count of coma will be reduced for correcting replacing  */
+                {
+                    countComa -= 1;
+                }
+                if (equation[i] == ',')//pow(2,2) If we have such equation, count of comas will be one
+                {
+                    countComa += 1;
+                    if (countComa == 1)
+                    {
+                        firstComa = i;
+                    }
+                    else if (countComa == 2)//pow(2,3,1,2) If we have such equation, count of comas will be two, and index of coma, which will be replaced, is the current index
+                    {
+                        comaBetweenValues = i;
+                    }
+                    else if (countComa == 3 && equation.Contains('+') || equation.Contains('*') || equation.Contains('/') || equation.Contains('-'))//pow(2,3+3,2,3)
+                    {
+                        comaBetweenValues = i;
+                    }
+                }
+            }
+            if (countComa == 1)//If we have one coma, index of coma, which will be replaced, will be the first coma, which has been found in the equation
+            {
+                comaBetweenValues = firstComa;
+            }
+            Console.WriteLine(comaBetweenValues);
+            equation = equation.Insert(comaBetweenValues, "^");
+            equation = equation.Remove(comaBetweenValues + 1, 1);
+            equation = equation.Insert(comaBetweenValues + 1, "(");
+            equation = equation.Insert(comaBetweenValues, ")");
+            Console.WriteLine(equation);
+            equation = equation.Insert(0, "(");
+            Console.WriteLine(comaBetweenValues);
+            equation = equation.Insert(equation.Length, ")");
+            Console.WriteLine(equation);
         }
 
         /// <summary>
