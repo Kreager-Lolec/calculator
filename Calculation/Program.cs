@@ -30,6 +30,7 @@ namespace Calculator
                    "Example of correct input: 1+1; 1 + 1; sqrt(5); 5^1/2; 1,2 + 1,3 \n" +
                    "Enter: ");
                 string equation = Console.ReadLine();
+                equation = equation.ToLower();
                 string dispEq = equation;
                 bool containsPoint = false;
                 if (equation.Contains('.'))
@@ -38,64 +39,44 @@ namespace Calculator
                     equation = equation.Replace('.', ',');
                     dispEq = dispEq.Replace(',', '.');
                 }
-                int leftBracket = 0;
-                int rightBracket = 0;
+                int leftBracket = -1;
+                int rightBracket = -1;
                 double result = 0;
                 string tsq = "";
-                List<string> subList;
-                while (equation.Contains("sqrt") || equation.Contains("pow"))
+                List<string> subList = new List<string>() { };
+                while (equation.Contains("sqrt") || equation.Contains("pow") || equation.Contains("sin") || equation.Contains("cos")
+                    || equation.Contains("tan") || equation.Contains("cot") || equation.Contains("log") || equation.Contains("ln"))
                 {
-                    bracketindex(equation, ref leftBracket, ref rightBracket);
-                    string subEquation = Substring(equation, leftBracket, rightBracket);
-                    tsq = subEquation;
-                    validateequation(ref tsq, out subList);
+                    string subEquation = ExtractSubEquation(ref equation, ref leftBracket, ref rightBracket, ref tsq, ref subList);
                     if (equation.Contains("sqrt"))
                     {
-                        if (equation[leftBracket - 1] == 't')//If previous element is "t", that means that's operand sqrt, and we will extract the root
-                        {
-                            result = Math.Sqrt(Prioritiescalculation(ref subEquation, ref subList));
-                            equation = equation.Replace("sqrt(" + tsq + ")", result.ToString());
-                        }
-                        else
-                        {
-                            result = Prioritiescalculation(ref subEquation, ref subList);
-                            equation = equation.Replace("(" + tsq + ")", result.ToString());
-                        }
+                        CalculateSqrt(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
                     }
                     else if (equation.Contains("pow"))
                     {
-                        if (equation[leftBracket - 1] == 'w')//If previous element is "w", that means that's operand pow, and we will raise to power value
-                        {
-                            if (!subEquation.Contains(','))
-                            {
-                                result = Prioritiescalculation(ref subEquation, ref subList);
-                                equation = equation.Replace("pow(" + tsq + ")", result.ToString());
-                            }
-                            else
-                            {
-                                equation = equation.Replace("pow(" + tsq + ")", ExtractPow(subEquation));
-                            }
-                        }
-                        else
-                        {
-                            result = Prioritiescalculation(ref subEquation, ref subList);
-                            equation = equation.Replace("(" + tsq + ")", result.ToString());
-                        }
-                        validateequation(ref tsq, out subList);
-                        foreach (var item in subList)
-                        {
-                            Console.WriteLine(item);
-                        }
-                        Console.WriteLine(equation);
+                        CalculatePow(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
+                    }
+                    else if (equation.Contains("asin") || equation.Contains("acos") || equation.Contains("atan") || equation.Contains("acot"))
+                    {
+                        CalculateArcTrigonometric(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
+                    }
+                    else if (equation.Contains("sin") || equation.Contains("cos") || equation.Contains("tan") || equation.Contains("cot"))
+                    {
+                        CalculateTrigonometric(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
+                    }
+                    else if (equation.Contains("log") || equation.Contains("ln"))
+                    {
+                        CalculateLogarithm(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
+                    }
+                    else
+                    {
+                        throw new InvalidInputException(equation);
                     }
                     Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                 }
                 while (equation.Contains('(') && equation.Contains(')'))
                 {
-                    bracketindex(equation, ref leftBracket, ref rightBracket);
-                    string subEquation = Substring(equation, leftBracket, rightBracket);
-                    tsq = subEquation;
-                    validateequation(ref tsq, out subList);
+                    string subEquation = ExtractSubEquation(ref equation, ref leftBracket, ref rightBracket, ref tsq, ref subList);
                     result = Prioritiescalculation(ref subEquation, ref subList);
                     equation = equation.Replace("(" + tsq + ")", result.ToString());
                     Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
@@ -120,12 +101,201 @@ namespace Calculator
                 Console.WriteLine(new StackTrace().GetFrame(0).GetMethod().Name + ": " + ex.Message);
             }
         }
+        /// <summary>
+        /// this method extract subequation from bracket's equation
+        /// </summary>
+        /// <param name="equation"></param>
+        /// <param name="leftBracket"></param>
+        /// <param name="rightBracket"></param>
+        /// <param name="tsq"></param>
+        /// <param name="subList"></param>
+        /// <returns></returns>
+        static string ExtractSubEquation(ref string equation, ref int leftBracket, ref int rightBracket, ref string tsq, ref List<string> subList)
+        {
+            bracketindex(equation, ref leftBracket, ref rightBracket);
+            string subEquation = Substring(equation, leftBracket, rightBracket);
+            tsq = subEquation;
+            validateequation(ref tsq, out subList);
+            return subEquation;
+        }
+        /// <summary>
+        /// this method calculate logarithms
+        /// </summary>
+        /// <param name="equation"></param>
+        /// <param name="leftBracket"></param>
+        /// <param name="subEquation"></param>
+        /// <param name="result"></param>
+        /// <param name="subList"></param>
+        /// <param name="tsq"></param>
+        static void CalculateLogarithm(ref string equation, int leftBracket, ref string subEquation, ref double result, ref List<string> subList, ref string tsq)
+        {
+            if (subEquation.Contains('-'))
+            {
+                throw new InvalidInputException(equation);
+            }
+            if (equation[leftBracket - 1] == 'n')
+            {
+                result = Math.Log(Prioritiescalculation(ref subEquation, ref subList));
+                equation = equation.Replace("ln(" + tsq + ")", result.ToString());
+            }
+            else if (equation[leftBracket - 1] == 'g')
+            {
+                result = Math.Log2(Prioritiescalculation(ref subEquation, ref subList));
+                equation = equation.Replace("log(" + tsq + ")", result.ToString());
+            }
+            else
+            {
+                result = Prioritiescalculation(ref subEquation, ref subList);
+                equation = equation.Replace("(" + tsq + ")", result.ToString());
+            }
+        }
+        /// <summary>
+        /// this method calculate trigonometric arc functions
+        /// </summary>
+        /// <param name="equation"></param>
+        /// <param name="leftBracket"></param>
+        /// <param name="subEquation"></param>
+        /// <param name="result"></param>
+        /// <param name="subList"></param>
+        /// <param name="tsq"></param>
+        static void CalculateArcTrigonometric(ref string equation, int leftBracket, ref string subEquation, ref double result, ref List<string> subList, ref string tsq)
+        {
+            if (double.Parse(subEquation) > 1 || double.Parse(subEquation) < 0)
+            {
+                throw new InvalidInputException(equation);
+            }
+            if (equation[leftBracket - 1] == 'n')
+            {
+                if (equation[leftBracket - 2] == 'i')
+                {
+                    result = Math.Asin(Prioritiescalculation(ref subEquation, ref subList));
+                    equation = equation.Replace("asin(" + tsq + ")", result.ToString());
+                }
+                else if (equation[leftBracket - 2] == 'a')
+                {
+                    result = Math.Atan(Prioritiescalculation(ref subEquation, ref subList));
+                    equation = equation.Replace("atan(" + tsq + ")", result.ToString());
+                }
+            }
+            else if (equation[leftBracket - 1] == 's')
+            {
+                result = Math.Acos(Prioritiescalculation(ref subEquation, ref subList));
+                equation = equation.Replace("acos(" + tsq + ")", result.ToString());
+            }
+            else if (equation[leftBracket - 1] == 't')
+            {
+                result = Math.Atan(Prioritiescalculation(ref subEquation, ref subList)) / 1;
+                equation = equation.Replace("acot(" + tsq + ")", result.ToString());
+            }
+            else
+            {
+                result = Prioritiescalculation(ref subEquation, ref subList);
+                equation = equation.Replace("(" + tsq + ")", result.ToString());
+            }
+        }
+        /// <summary>
+        /// this method calculate trigonometric standtard functions
+        /// </summary>
+        /// <param name="equation"></param>
+        /// <param name="leftBracket"></param>
+        /// <param name="subEquation"></param>
+        /// <param name="result"></param>
+        /// <param name="subList"></param>
+        /// <param name="tsq"></param>
+        static void CalculateTrigonometric(ref string equation, int leftBracket, ref string subEquation, ref double result, ref List<string> subList, ref string tsq)
+        {
+            if (equation[leftBracket - 1] == 'n')
+            {
+                if (equation[leftBracket - 2] == 'i')
+                {
+                    result = Math.Sin(Prioritiescalculation(ref subEquation, ref subList));
+                    equation = equation.Replace("sin(" + tsq + ")", result.ToString());
+                }
+                else if (equation[leftBracket - 2] == 'a')
+                {
+                    result = Math.Tan(Prioritiescalculation(ref subEquation, ref subList));
+                    equation = equation.Replace("tan(" + tsq + ")", result.ToString());
+                }
+            }
+            else if (equation[leftBracket - 1] == 's')
+            {
+                result = Math.Cos(Prioritiescalculation(ref subEquation, ref subList));
+                equation = equation.Replace("cos(" + tsq + ")", result.ToString());
+            }
+            else if (equation[leftBracket - 1] == 't')
+            {
+                result = Math.Tan(Prioritiescalculation(ref subEquation, ref subList)) / 1;
+                equation = equation.Replace("cot(" + tsq + ")", result.ToString());
+            }
+            else
+            {
+                result = Prioritiescalculation(ref subEquation, ref subList);
+                equation = equation.Replace("(" + tsq + ")", result.ToString());
+            }
+        }
+
+        /// <summary>
+        /// this method calculate equation under pow operand
+        /// </summary>
+        /// <param name="equation"></param>
+        /// <param name="leftBracket"></param>
+        /// <param name="subEquation"></param>
+        /// <param name="result"></param>
+        /// <param name="subList"></param>
+        /// <param name="tsq"></param>
+        static void CalculatePow(ref string equation, int leftBracket, ref string subEquation, ref double result, ref List<string> subList, ref string tsq)
+        {
+            if (equation[leftBracket - 1] == 'w')//If previous element is "w", that means that's operand pow, and we will raise to power value
+            {
+                if (!subEquation.Contains(','))
+                {
+                    result = Prioritiescalculation(ref subEquation, ref subList);
+                    equation = equation.Replace("pow(" + tsq + ")", result.ToString());
+                }
+                else
+                {
+                    equation = equation.Replace("pow(" + tsq + ")", ExtractPow(subEquation));
+                }
+            }
+            else
+            {
+                result = Prioritiescalculation(ref subEquation, ref subList);
+                equation = equation.Replace("(" + tsq + ")", result.ToString());
+            }
+        }
+        /// <summary>
+        /// this method calculate equation under sqrt operand
+        /// </summary>
+        /// <param name="equation"></param>
+        /// <param name="leftBracket"></param>
+        /// <param name="subEquation"></param>
+        /// <param name="result"></param>
+        /// <param name="subList"></param>
+        /// <param name="tsq"></param>
+
+        static void CalculateSqrt(ref string equation, int leftBracket, ref string subEquation, ref double result, ref List<string> subList, ref string tsq)
+        {
+            if (equation[leftBracket - 1] == 't')//If previous element is "t", that means that's operand sqrt, and we will extract the root
+            {
+                result = Math.Sqrt(Prioritiescalculation(ref subEquation, ref subList));
+                equation = equation.Replace("sqrt(" + tsq + ")", result.ToString());
+            }
+            else
+            {
+                result = Prioritiescalculation(ref subEquation, ref subList);
+                equation = equation.Replace("(" + tsq + ")", result.ToString());
+            }
+        }
+        /// <summary>
+        /// this method extract underpow equation or value, and add ^ operand
+        /// </summary>
+        /// <param name="equation"></param>
+        /// <returns></returns>
         static string ExtractPow(string equation)
         {
             int countComa = 0;//Value to calculate count of comas
             int firstComa = -1;//Value to get index of the first coma in the equation
             int comaBetweenValues = -1;//Value to get index of the coma, which will be replaced by "^"
-            string newEq = "";
             for (int i = 0; i < equation.Length; i++)
             {
                 if (equation[i] == ',')//pow(2,2) If we have such equation, count of comas will be one
@@ -156,7 +326,7 @@ namespace Calculator
         }
 
         /// <summary>
-        /// this method check if element of string is bumber of dot('.')
+        /// this method check if element of string is number of dot('.')
         /// </summary>
         /// <param name="symbol"></param>
         /// <returns></returns>
