@@ -10,7 +10,8 @@ namespace Calculator
         {
             public InvalidInputException()
             {
-
+                Console.WriteLine("Invalid Input \n" +
+                    "Please try again!");
             }
 
             public InvalidInputException(string name)
@@ -31,6 +32,7 @@ namespace Calculator
                    "Enter: ");
                 string equation = Console.ReadLine();
                 equation = equation.ToLower();
+                bool controlInput = true;
                 string dispEq = equation;
                 bool containsPoint = false;
                 if (equation.Contains('.'))
@@ -48,33 +50,40 @@ namespace Calculator
                     || equation.Contains("tan") || equation.Contains("cot") || equation.Contains("log") || equation.Contains("ln"))
                 {
                     string subEquation = ExtractSubEquation(ref equation, ref leftBracket, ref rightBracket, ref tsq, ref subList);
-                    if (equation.Contains("sqrt"))
+                    if (equation.Contains("sqrt("))
                     {
+                        controlInput = false;
                         CalculateSqrt(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
                     }
-                    else if (equation.Contains("pow"))
+                    else if (equation.Contains("pow("))
                     {
+                        controlInput = false;
                         CalculatePow(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
                     }
-                    else if (equation.Contains("asin") || equation.Contains("acos") || equation.Contains("atan") || equation.Contains("acot"))
+                    else if (equation.Contains("asin(") || equation.Contains("acos(") || equation.Contains("atan(") || equation.Contains("acot("))
                     {
+                        controlInput = false;
                         CalculateArcTrigonometric(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
                     }
-                    else if (equation.Contains("sin") || equation.Contains("cos") || equation.Contains("tan") || equation.Contains("cot"))
+                    else if (equation.Contains("sin(") || equation.Contains("cos(") || equation.Contains("tan(") || equation.Contains("cot("))
                     {
+                        controlInput = false;
                         CalculateTrigonometric(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
                     }
-                    else if (equation.Contains("log") || equation.Contains("ln"))
+                    else if (equation.Contains("log(") || equation.Contains("ln("))
                     {
+                        controlInput = false;
                         CalculateLogarithm(ref equation, leftBracket, ref subEquation, ref result, ref subList, ref tsq);
                     }
-                    else
+                    if (controlInput)
                     {
-                        throw new InvalidInputException(equation);
+                        throw new InvalidInputException(dispEq);
                     }
                     Console.WriteLine(tsq + " = " + result + "\nNow equation is " + equation + "\n----------------------------------");
                 }
-                while (equation.Contains('(') && equation.Contains(')'))
+                while (equation.Contains('(') && equation.Contains(')') && !char.IsLetter(equation[equation.IndexOf('(') - 1]) 
+                    && !char.IsLetter(equation[equation.IndexOf(')') + 1]))/* Check if there are brackets and 
+                 * elements before left brackect and by the right bracket  will be letters or no. If letter, throw exception, because we have proccesed all string operations */
                 {
                     string subEquation = ExtractSubEquation(ref equation, ref leftBracket, ref rightBracket, ref tsq, ref subList);
                     result = Prioritiescalculation(ref subEquation, ref subList);
@@ -83,6 +92,7 @@ namespace Calculator
                 }
                 while (equation.Contains("*") || equation.Contains("/") || equation.Contains("+") || equation.Contains("-") || equation.Contains("^"))
                 {
+                    controlInput = false;
                     validateequation(ref equation, out subList);
                     if (subList.Count >= 3)
                     {
@@ -94,6 +104,7 @@ namespace Calculator
                     if (equation.Contains("-") && equation.Split().Length < 3) break;
                 }
                 if (containsPoint) equation = equation.Replace(',', '.');
+                if (controlInput) throw new InvalidInputException(dispEq);
                 Console.WriteLine("Resulting value of " + dispEq + " is: " + equation);
             }
             catch (Exception ex)
@@ -280,7 +291,7 @@ namespace Calculator
                 result = Math.Sqrt(Prioritiescalculation(ref subEquation, ref subList));
                 equation = equation.Replace("sqrt(" + tsq + ")", result.ToString());
             }
-            else
+            else if(equation[leftBracket - 1] != 't')
             {
                 result = Prioritiescalculation(ref subEquation, ref subList);
                 equation = equation.Replace("(" + tsq + ")", result.ToString());
@@ -370,6 +381,10 @@ namespace Calculator
         /// <param name="resultarr"></param>
         static void validateequation(ref string equation, out List<string> resultarr)
         {
+            if (equation == "")
+            {
+                throw new InvalidInputException();
+            }
             equation = equation.Trim(' ');
             equation = equation.Replace(" ", "");
             string resultEq = equation[0].ToString();
@@ -408,6 +423,10 @@ namespace Calculator
                     resultarr[i + 1] = "-" + resultarr[i + 1];
                 }
             }
+            if (resultEq.Contains('(') && !resultEq.Contains(')') || resultEq.Contains(')') && !resultEq.Contains('('))
+            {
+                throw new InvalidInputException(equation);
+            }
             Console.WriteLine("Local arythmetic will be such: " + resultEq);
         }
         /// <summary>
@@ -437,9 +456,17 @@ namespace Calculator
                     result = lNum * rNum;
                     break;
                 case '/':
+                    if (rNum == 0)
+                    {
+                        throw new DivideByZeroException();
+                    }
                     result = lNum / rNum;
                     break;
                 case '^':
+                    if (lNum == 0 && rNum < 0)
+                    {
+                        throw new DivideByZeroException();
+                    }
                     result = Math.Pow(lNum, rNum);
                     break;
                 default:
@@ -527,15 +554,15 @@ namespace Calculator
             }
             return res;
         }
-        static string BuildmathString(List<string> mathParts)
-        {
-            string mathString = "";
-            for (int i = 0; i < mathParts.Count; i++)
-            {
-                mathString += " " + mathParts[i];
-            }
-            return mathString.Trim(' ');
-        }
+        //static string BuildmathString(List<string> mathParts)
+        //{
+        //    string mathString = "";
+        //    for (int i = 0; i < mathParts.Count; i++)
+        //    {
+        //        mathString += " " + mathParts[i];
+        //    }
+        //    return mathString.Trim(' ');
+        //}
 
         /// <summary>
         /// check indexes of brackets in current equation
@@ -545,6 +572,10 @@ namespace Calculator
         /// <param name="rightBracket"></param>
         static void bracketindex(string eq, ref int leftBracket, ref int rightBracket)
         {
+            leftBracket = -1;
+            rightBracket = -1;
+            int templbracket = leftBracket;
+            int temprbracket = rightBracket;
             for (int i = 0; i < eq.Length; i++)
             {
                 if (eq[i] == '(')
@@ -556,6 +587,10 @@ namespace Calculator
                     rightBracket = i;
                     break;
                 }
+            }
+            if (templbracket == leftBracket || temprbracket == rightBracket)
+            {
+                throw new InvalidInputException(eq);
             }
         }
     }
