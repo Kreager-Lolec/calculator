@@ -1,0 +1,16 @@
+D:\C#projects\CalculationNew\bin\Debug\net6.0\CalculationNew.exe
+D:\C#projects\CalculationNew\bin\Debug\net6.0\CalculationNew.deps.json
+D:\C#projects\CalculationNew\bin\Debug\net6.0\CalculationNew.runtimeconfig.json
+D:\C#projects\CalculationNew\bin\Debug\net6.0\CalculationNew.dll
+D:\C#projects\CalculationNew\bin\Debug\net6.0\ref\CalculationNew.dll
+D:\C#projects\CalculationNew\bin\Debug\net6.0\CalculationNew.pdb
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.GeneratedMSBuildEditorConfig.editorconfig
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.AssemblyInfoInputs.cache
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.AssemblyInfo.cs
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.csproj.CoreCompileInputs.cache
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.dll
+D:\C#projects\CalculationNew\obj\Debug\net6.0\ref\CalculationNew.dll
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.pdb
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.genruntimeconfig.cache
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.csproj.Fody.CopyLocal.cache
+D:\C#projects\CalculationNew\obj\Debug\net6.0\CalculationNew.csproj.AssemblyReference.cache
